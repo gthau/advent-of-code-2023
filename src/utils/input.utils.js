@@ -24,6 +24,15 @@ export function strToNbArr(str) {
 /**
  *
  * @param {number[]} nbArray
+ * @returns {string} str
+ */
+export function nbArrToStr(nbArray) {
+  return nbArray.reduce((acc, nb) => acc + `${nb}`, '');
+}
+
+/**
+ *
+ * @param {number[]} nbArray
  * @returns {number}
  */
 export function sum(nbArray) {
