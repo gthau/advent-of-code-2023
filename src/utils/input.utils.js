@@ -15,5 +15,26 @@ export function readFile(path) {
  * @returns {number[]}
  */
 export function strToNbArr(str) {
-  return str.split(/\s+/).map((nb) => parseInt(nb));
+  return str
+    .trimStart()
+    .split(/\s+/)
+    .map((nb) => parseInt(nb));
+}
+
+/**
+ *
+ * @param {number[]} nbArray
+ * @returns {number}
+ */
+export function sum(nbArray) {
+  return nbArray.reduce((acc, nb) => acc + nb, 0);
+}
+
+/**
+ *
+ * @param {number[]} nbArray
+ * @returns {number}
+ */
+export function mult(nbArray) {
+  return nbArray.reduce((acc, nb) => acc * nb, 1);
 }
