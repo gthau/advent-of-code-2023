@@ -47,3 +47,24 @@ export function sum(nbArray) {
 export function mult(nbArray) {
   return nbArray.reduce((acc, nb) => acc * nb, 1);
 }
+
+/**
+ *
+ * @param {number} a
+ * @param {number} b
+ * @returns number
+ */
+// @ts-ignore
+export function gcd(a, b) {
+  return a ? gcd(b % a, a) : b;
+}
+
+/**
+ *
+ * @param {number} a
+ * @param {number} b
+ * @returns number
+ */
+export function lcm(a, b) {
+  return (a * b) / gcd(a, b);
+}
