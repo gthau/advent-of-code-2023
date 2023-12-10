@@ -11,19 +11,32 @@ export function parseInput(lines) {
 
 /**
  *
+ * @param {string[]} lines
+ * @returns {number[][]}
+ */
+export function parseInput2(lines) {
+  return lines.map((line) => strToNbArr(line).reverse());
+}
+
+/**
+ *
  * @param {number[][]} histories
+ * @param {boolean} toFront
  * @returns {number[]}
  */
-export function computeLastNumbers(histories) {
-  return histories.map((hist) => computeLastNumber(hist));
+export function computeLastNumbers(histories, toFront = false) {
+  return histories.map((hist) => computeLastNumber(hist, toFront));
 }
 
 /**
  *
  * @param {number[]} history
+ * @param {boolean} toFront
  * @returns {number}
  */
-export function computeLastNumber(history) {
+export function computeLastNumber(history, toFront = false) {
+  const diffMult = toFront ? -1 : 1;
+
   /** @type {number[][]} */
   const sequences = [history];
 
@@ -39,7 +52,7 @@ export function computeLastNumber(history) {
     allZeroes = true;
 
     for (let i = 1; i < currSequence.length; i++) {
-      diff = currSequence[i] - currSequence[i - 1];
+      diff = diffMult * (currSequence[i] - currSequence[i - 1]);
       if (diff !== 0) {
         allZeroes = false;
       }
@@ -64,7 +77,7 @@ export function computeLastNumber(history) {
     nextSequence = sequences[j + 1];
     nextNb =
       /** @type {!number} */ (processedSequence.at(-1)) +
-      /** @type {!number} */ (nextSequence.at(-1));
+      diffMult * /** @type {!number} */ (nextSequence.at(-1));
     processedSequence.push(nextNb);
   }
 
