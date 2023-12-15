@@ -41,6 +41,7 @@ const letters = /** @type {const} */ ({
 });
 
 /** @typedef {keyof typeof moves} MoveDirections */
+/** @typedef {{ moveDirection: MoveDirections, position: Position}} MoveDirectionAndPosition */
 
 /**
  *
@@ -75,9 +76,9 @@ export function findInitialNextDirectionsAndPositions(currentPosition, lines) {
 /**
  *
  * @param {Position} currentPosition
- * @param {MoveDirections} previousDirection
+ * @param {MoveDirections | undefined} previousDirection
  * @param {string[]} lines
- * @returns {{ moveDirection: MoveDirections, position: Position}}
+ * @returns {MoveDirectionAndPosition}
  */
 export function computeNextPosition(currentPosition, previousDirection, lines) {
   /** @type {Position} */
@@ -92,8 +93,9 @@ export function computeNextPosition(currentPosition, previousDirection, lines) {
 
   for (const dir of /** @type {MoveDirections[]} */ (Object.keys(moves))) {
     if (
-      dir !== moves[previousDirection].oppositeMove &&
-      letters[currentLetter].allowedMoves.find((d) => d === dir)
+      !previousDirection ||
+      (dir !== moves[previousDirection].oppositeMove &&
+        letters[currentLetter].allowedMoves.find((d) => d === dir))
     ) {
       const { move, validPipes } = moves[dir];
       const nextPosition = /** @type {Position} */ ([
@@ -215,4 +217,66 @@ export function findFarthestElementInLoop(lines, startPosition) {
   }
 
   return maxDistance;
+}
+
+/**
+ *
+ * @param {string[]} lines
+ * @param {Position} startPosition
+ * @returns {Position[]}
+ */
+export function gatherVertices(lines, startPosition) {
+  const vertices = [];
+
+  /** @type {any} */
+  let posAndMoveDir = { position: startPosition };
+  let currentLetter = 'S';
+
+  do {
+    currentLetter = lines[posAndMoveDir.position[0]][posAndMoveDir.position[1]];
+    vertices.push(posAndMoveDir.position);
+    posAndMoveDir = computeNextPosition(
+      posAndMoveDir.position,
+      posAndMoveDir.moveDirection,
+      lines
+    );
+  } while (Object.keys(posAndMoveDir).length);
+
+  return vertices;
+}
+
+/**
+ * Compute the Area of the polygon using [Shoelace formula](https://en.wikipedia.org/wiki/Shoelace_formula)
+ * @param {Position[]} vertices
+ * @returns {number}
+ */
+export function computeArea(vertices) {
+  let area = 0;
+
+  // for (let i = 0; i < vertices.length; i++) {
+  //   const a = vertices[i];
+  //   const b = vertices[(i + 1) % vertices.length];
+
+  //   area += a[1] * b[0] - b[1] * a[0];
+  // }
+
+  for (let i = 1; i <= vertices.length; i++) {
+    const a = vertices[i - 1];
+    const b = vertices[i % vertices.length];
+    const c = vertices[(i + 1) % vertices.length];
+
+    area += b[0] * (a[1] - c[1]);
+  }
+
+  return Math.abs(area) / 2;
+}
+
+/**
+ * Compute the area within the polygon using [Pick's theorem](https://en.wikipedia.org/wiki/Pick%27s_theorem)
+ * @param {number} area
+ * @param {number} maxDistance
+ * @returns {number}
+ */
+export function computeAreaWithin(area, maxDistance) {
+  return area - maxDistance + 1;
 }
