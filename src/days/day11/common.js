@@ -1,4 +1,4 @@
-/** @typedef {string[][]} Cosmos */
+/** @typedef {string[][] | string[]} Cosmos */
 /** @typedef {[number, number ]} Position */
 /** @typedef {{id: number; position: Position}} Galaxy */
 
@@ -159,4 +159,93 @@ export function computeGalaxyPairs(galaxies) {
  */
 export function computeDistance(gPos1, gPos2) {
   return Math.abs(gPos2[1] - gPos1[1]) + Math.abs(gPos2[0] - gPos1[0]);
+}
+
+// part 2
+/**
+ *
+ * @param {Cosmos} cosmos
+ * @param {number} expansion
+ * @returns {{
+ *  originalGalaxies: Galaxy[];
+ *  shiftedGalaxies: Galaxy[];
+ *  imgToRealPositions: {
+ *    y: number[];
+ *    x: number[];
+ *  }
+ * }}
+ */
+export function computeExpansionAndGalaxyPositions(
+  cosmos,
+  expansion = 1_000_000
+) {
+  let shouldExpand = true;
+  let galaxyId = 0;
+
+  /** @type {Galaxy[]} */
+  const galaxies = [];
+
+  /** @type {number[]} */
+  const yMap = [];
+
+  /** @type {number[]} */
+  const xMap = [];
+
+  // first loop on rows, determine y real positions and galaxies' positions
+  for (let y = 0; y < cosmos.length; y++) {
+    yMap.push(
+      y === 0
+        ? // 0 is always at position 0
+          0
+        : // next position is previous position + 1 OR expansion if the previous row had no galaxy
+          yMap[y - 1] + (shouldExpand ? expansion : 1)
+    );
+
+    shouldExpand = true;
+
+    for (let x = 0; x < cosmos[y].length; x++) {
+      const elt = cosmos[y][x];
+
+      if (elt === '#') {
+        shouldExpand = false;
+        galaxies.push({ id: galaxyId++, position: [y, x] });
+      }
+    }
+  }
+
+  // second loop on the columns, determine x real positions
+  for (let x = 0; x < cosmos[0].length; x++) {
+    xMap.push(
+      x === 0
+        ? // 0 is always at position 0
+          0
+        : // next position is previous position + 1 OR expansion if the previous row had no galaxy
+          xMap[x - 1] + (shouldExpand ? expansion : 1)
+    );
+
+    shouldExpand = true;
+
+    for (let y = 0; y < cosmos.length; y++) {
+      const elt = cosmos[y][x];
+
+      if (elt === '#') {
+        shouldExpand = false;
+      }
+    }
+  }
+
+  const shiftedGalaxies = galaxies.map(({ id, position }) => ({
+    id,
+    // prettier-ignore
+    position: /** @type {Position} */ ([
+      yMap[position[0]],
+      xMap[position[1]]
+    ]),
+  }));
+
+  return {
+    originalGalaxies: galaxies,
+    shiftedGalaxies,
+    imgToRealPositions: { x: xMap, y: yMap },
+  };
 }
